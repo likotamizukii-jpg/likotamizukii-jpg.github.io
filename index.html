@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>For You</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Caveat:wght@500&family=Nunito:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --wine:#2a1020; --plum:#431a33; --rose:#e9a1b5; --blush:#fbeff0;
+  --gold:#d9b26f; --ink:#3a1f2b;
+  --serif:"Fraunces",Georgia,serif; --hand:"Caveat","Segoe Script",cursive; --sans:"Nunito",system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{
+  font-family:var(--sans); color:var(--blush); overflow-x:hidden;
+  background:radial-gradient(120% 90% at 50% 0%,var(--plum),var(--wine) 70%) fixed;
+  display:grid; grid-template-columns:minmax(0,1fr); place-items:center; padding:24px;
+}
+#floaters{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+#floaters span{position:absolute;bottom:-40px;color:var(--rose);opacity:0;animation:rise linear infinite}
+@keyframes rise{0%{transform:translateY(0) rotate(0);opacity:0}10%{opacity:.35}90%{opacity:.25}100%{transform:translateY(-110vh) rotate(40deg);opacity:0}}
+
+main{position:relative;width:100%;max-width:560px;z-index:1}
+.screen{display:none;text-align:center}
+.screen.active{display:block;animation:enter .8s cubic-bezier(.2,.8,.2,1) both}
+@keyframes enter{from{opacity:0;transform:translateY(18px) scale(.98)}to{opacity:1;transform:none}}
+.screen.leaving{animation:leave .45s ease both}
+@keyframes leave{to{opacity:0;transform:translateY(-14px) scale(.98)}}
+
+h1{font-family:var(--serif);font-weight:400;font-size:clamp(2.4rem,9vw,4rem);line-height:1.08;letter-spacing:-.01em}
+h1 em{color:var(--rose)}
+.sub{margin:18px auto 34px;max-width:34ch;opacity:.8;line-height:1.6}
+.counter{font-family:var(--serif);font-style:italic;color:var(--gold);margin-top:-14px;margin-bottom:34px}
+
+button{font:inherit;cursor:pointer;border:0;color:inherit;touch-action:manipulation}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.cta{
+  background:var(--rose);color:var(--wine);font-weight:600;padding:14px 34px;border-radius:999px;
+  font-size:1.05rem;transition:transform .2s,box-shadow .3s;box-shadow:0 0 0 0 rgba(233,161,181,.5);
+  animation:pulse 2.4s infinite;
+}
+.cta:hover{transform:scale(1.05)}
+@keyframes pulse{70%{box-shadow:0 0 0 16px rgba(233,161,181,0)}100%{box-shadow:0 0 0 0 rgba(233,161,181,0)}}
+
+/* quiz */
+.hearts{display:flex;justify-content:center;gap:10px;margin-bottom:26px}
+.hearts i{font-style:normal;font-size:1.4rem;color:rgba(251,239,240,.2);transition:color .5s,transform .5s}
+.hearts i.on{color:var(--rose);transform:scale(1.2)}
+.card{
+  background:rgba(251,239,240,.06);border:1px solid rgba(251,239,240,.14);
+  border-radius:28px;padding:34px 26px;backdrop-filter:blur(8px);
+}
+.card.shake{animation:shake .45s}
+@keyframes shake{20%{transform:translateX(-9px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
+.q{font-family:var(--serif);font-size:clamp(1.4rem,5vw,1.9rem);line-height:1.25;margin-bottom:24px}
+.opts{display:grid;gap:12px}
+.opt{
+  background:rgba(251,239,240,.08);border:1px solid rgba(251,239,240,.18);border-radius:16px;
+  padding:14px 18px;text-align:left;font-size:1rem;transition:background .25s,transform .2s,border-color .25s;
+}
+.opt:hover{background:rgba(233,161,181,.22);transform:translateX(4px)}
+.opt.right{background:var(--rose);color:var(--wine);border-color:var(--rose)}
+.opt.wrong{background:rgba(180,60,80,.35);border-color:rgba(255,120,140,.6)}
+.field{display:flex;gap:10px}
+.field input{
+  flex:1;width:0;min-width:0;background:rgba(251,239,240,.08);border:1px solid rgba(251,239,240,.25);
+  border-radius:16px;padding:14px 18px;color:var(--blush);font:inherit;
+}
+.field input.wrong{border-color:#ff7890;background:rgba(180,60,80,.35)}
+.field .cta{animation:none;padding:14px 22px}
+.msg{min-height:1.6em;margin-top:18px;font-family:var(--serif);font-style:italic;color:var(--gold)}
+
+/* envelope */
+.env{position:relative;width:min(340px,86vw);height:230px;margin:70px auto 0;perspective:900px}
+.env .back{position:absolute;inset:0;background:#c97b93;border-radius:10px;box-shadow:0 30px 60px rgba(0,0,0,.45)}
+.env .paper{
+  position:absolute;left:8%;right:8%;bottom:10px;height:85%;background:var(--blush);border-radius:6px;
+  transition:transform 1s .5s cubic-bezier(.2,.8,.2,1);
+}
+.env .front{
+  position:absolute;inset:0;border-radius:10px;
+  background:linear-gradient(135deg,transparent 49.5%,#d98aa2 50%) left/50% 100% no-repeat,
+             linear-gradient(225deg,transparent 49.5%,#d98aa2 50%) right/50% 100% no-repeat,
+             linear-gradient(0deg,#e29bb0 0 55%,transparent 55%);
+}
+.env .flap{
+  position:absolute;left:0;right:0;top:0;height:60%;background:#b8647f;transform-origin:top;
+  clip-path:polygon(0 0,100% 0,50% 100%);transition:transform .8s cubic-bezier(.5,0,.2,1),z-index 0s .4s;z-index:3;
+}
+.env.open .flap{transform:rotateX(180deg);z-index:0}
+.env.open .paper{transform:translateY(-62%)}
+.seal{
+  position:absolute;left:50%;top:50%;width:62px;height:62px;margin:-31px 0 0 -31px;z-index:4;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#e0566f,#9c2342);color:var(--blush);font-size:1.7rem;
+  box-shadow:0 6px 14px rgba(0,0,0,.4);animation:beat 1.4s infinite;transition:transform .4s,opacity .4s;
+}
+.env.open .seal{transform:scale(1.6) rotate(25deg);opacity:0;animation:none;pointer-events:none}
+@keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.14)}30%{transform:scale(1)}45%{transform:scale(1.1)}}
+.hint{margin-top:44px;opacity:.7;font-family:var(--serif);font-style:italic}
+
+/* letter */
+#letter{max-width:520px;margin:auto}
+.sheet{
+  background:var(--blush);color:var(--ink);text-align:left;border-radius:6px;padding:clamp(26px,6vw,46px);
+  box-shadow:0 30px 70px rgba(0,0,0,.5);
+  background-image:repeating-linear-gradient(transparent 0 33px,rgba(201,123,147,.18) 33px 34px);
+}
+.sheet .to{font-family:var(--hand);font-size:2rem;margin-bottom:10px}
+.sheet p{overflow-wrap:anywhere;font-family:var(--hand);font-size:1.45rem;line-height:34px;margin-bottom:34px;
+  opacity:0;transform:translateY(10px);transition:opacity 1s,transform 1s}
+.sheet p.show{opacity:1;transform:none}
+.sheet .sign{text-align:right;margin-bottom:0}
+
+.petal{position:fixed;top:-30px;width:14px;height:18px;border-radius:150% 0 150% 0;pointer-events:none;z-index:5;
+  animation:fall linear forwards}
+@keyframes fall{to{transform:translate(var(--dx),110vh) rotate(var(--r))}}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;transition-delay:0s!important}
+  #floaters,.petal{display:none}
+}
+</style>
+</head>
+<body>
+<div id="floaters" aria-hidden="true"></div>
+
+<main>
+  <section class="screen active" id="intro">
+    <h1 id="title"></h1>
+    <p class="sub" id="introText"></p>
+    <p class="counter" id="counter"></p>
+    <button class="cta" id="start">Begin</button>
+  </section>
+
+  <section class="screen" id="quiz">
+    <div class="hearts" id="hearts" aria-label="Progress"></div>
+    <div class="card" id="card"></div>
+    <p class="msg" id="msg" role="status"></p>
+  </section>
+
+  <section class="screen" id="envelope">
+    <h1 id="unlockTitle"></h1>
+    <div class="env" id="env">
+      <div class="back"></div>
+      <div class="paper"></div>
+      <div class="front"></div>
+      <div class="flap"></div>
+      <button class="seal" id="seal" aria-label="Open the letter">&hearts;</button>
+    </div>
+    <p class="hint">Tap the seal</p>
+  </section>
+
+  <section class="screen" id="letter">
+    <div class="sheet" id="sheet"></div>
+  </section>
+</main>
+
+<script>
+/* =========================================================
+   EDIT EVERYTHING HERE
+   ========================================================= */
+const CONFIG = {
+  herName: "My Baby",                 // her name or nickname
+  yourName: "Zethhh",                 // how you sign the letter
+  together: "2023-11-24",             // date you got together (YYYY-MM-DD), or "" to hide the counter
+  introTitle: "Happy Anniversary, <em>{name}</em>",
+  introText: "I made you a little game. Answer a few questions about us, and a surprise from me will be revealed:D",
+  unlockTitle: "You did it. This one’s for you.",
+  wrongMessages: ["Hmm, not quite. Try again.", "So close. Think about us.", "You know this one!"],
+  rightMessages: ["Yeppppp", "yesyeysyees.", "YAYYYY", "Let's gooo!."],
+
+  // type "choice": options + answer (the number of the correct option, starting at 0)
+  // type "text": answer is a word or list of accepted words (case doesn't matter)
+  // hint is optional and shows after two wrong tries
+  questions: [
+    {
+      type: "choice",
+      q: "What was the first EVER game we played together",
+      options: ["An Obby", "A Simulator", "A Story Game", "A Tycoon"],
+      answer: 0,
+      hint: "penguin(gab)."
+    },
+    {
+      type: "choice",
+      q: "What’s my favorite thing about you?",
+      options: ["Your smile", "Your laugh", "Your kindness", "All of it"],
+      answer: 3
+    },
+    {
+      type: "text",
+      q: "What’s the nickname I only call you?",
+      answer: ["baby"],
+      hint: "Starts with a b."
+    }
+  ],
+
+  // Your letter. A blank line starts a new paragraph.
+  letter: `BABYYYYYY HAPPPY ANNIVERSARYRYRYYYYYYYYYY , we did it:D
+
+WE SURVIVED 3 YEARS ohemji thats crazy bro, we've been through sooooooooo much together and im so proud of you and me and us and yes. I LVOE YOU BABY, I always will and im so glad that I am in this journey with you.
+
+We've been through alot and i just want to say im sorry for the times where i wasnt the best boyfriend. AND THANK YOU for the times where you were there when i needed you. To be honest, i can't imagine my life without you anymore and it's been so fun and meaningful. I LOVE YOU SOOO MUCH BABY and i hope we have muchmuchmuch more anniversaries to come ILOVEYOUBABYYYYYYYY SO MUCH.`
+};
+
+/* ========================================================= */
+
+const $ = s => document.querySelector(s);
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const pick = a => a[Math.floor(Math.random() * a.length)];
+let idx = 0, tries = 0, locked = false;
+
+// Text setup
+$("#title").innerHTML = CONFIG.introTitle.replace("{name}", CONFIG.herName);
+$("#introText").textContent = CONFIG.introText;
+$("#unlockTitle").textContent = CONFIG.unlockTitle;
+document.title = "For " + CONFIG.herName;
+if (CONFIG.together) {
+  const d = Math.floor((Date.now() - new Date(CONFIG.together)) / 864e5);
+  $("#counter").textContent = d > 0 ? d.toLocaleString() + " days together" : "";
+} else $("#counter").remove();
+
+// Background hearts
+const fl = $("#floaters");
+for (let i = 0; i < 18; i++) {
+  const s = document.createElement("span");
+  s.textContent = "\u2665";
+  s.style.cssText = `left:${Math.random()*100}%;font-size:${10+Math.random()*22}px;animation-duration:${14+Math.random()*18}s;animation-delay:${-Math.random()*25}s`;
+  fl.appendChild(s);
+}
+
+function show(id) {
+  const cur = document.querySelector(".screen.active");
+  const go = () => {
+    cur && cur.classList.remove("active", "leaving");
+    $("#" + id).classList.add("active");
+  };
+  if (cur && !reduce) { cur.classList.add("leaving"); setTimeout(go, 420); } else go();
+}
+
+function petals(n = 40) {
+  if (reduce) return;
+  const cols = ["#e9a1b5", "#e0566f", "#fbeff0", "#d9b26f"];
+  for (let i = 0; i < n; i++) {
+    const p = document.createElement("i");
+    p.className = "petal";
+    p.style.cssText = `left:${Math.random()*100}vw;background:${pick(cols)};--dx:${(Math.random()-.5)*240}px;--r:${Math.random()*720}deg;animation-duration:${3+Math.random()*3}s;animation-delay:${Math.random()*1.2}s`;
+    document.body.appendChild(p);
+    setTimeout(() => p.remove(), 8000);
+  }
+}
+
+// Quiz
+function drawHearts() {
+  $("#hearts").innerHTML = CONFIG.questions.map((_, i) => `<i class="${i < idx ? "on" : ""}">\u2665</i>`).join("");
+}
+
+function renderQ() {
+  const q = CONFIG.questions[idx];
+  tries = 0; locked = false;
+  $("#msg").textContent = "";
+  drawHearts();
+  const card = $("#card");
+  card.style.animation = "none"; card.offsetHeight; card.style.animation = "";
+  card.classList.remove("shake");
+  card.innerHTML = `<div class="q"></div>` + (q.type === "text"
+    ? `<div class="field"><input aria-label="Your answer" autocomplete="off" placeholder="Type your answer"><button type="button" class="cta" id="checkBtn">Check</button></div>`
+    : `<div class="opts"></div>`);
+  card.querySelector(".q").textContent = q.q;
+  if (q.type === "text") {
+    const inp = card.querySelector("input");
+    const submit = () => {
+      if (locked) return;
+      if (!inp.value.trim()) { $("#msg").textContent = "Type your answer first."; return; }
+      const ok = [].concat(q.answer).some(a => String(a).toLowerCase().trim() === inp.value.toLowerCase().trim());
+      check(ok, inp);
+    };
+    card.querySelector("#checkBtn").onclick = submit;
+    inp.onkeydown = e => { if (e.key === "Enter") submit(); };
+    inp.focus({ preventScroll: true });
+  } else {
+    q.options.forEach((t, i) => {
+      const b = document.createElement("button");
+      b.className = "opt"; b.textContent = t;
+      b.onclick = () => !locked && check(i === q.answer, b);
+      card.querySelector(".opts").appendChild(b);
+    });
+  }
+}
+
+function check(ok, el) {
+  const q = CONFIG.questions[idx];
+  if (ok) {
+    locked = true;
+    el.classList.add("right");
+    $("#msg").textContent = pick(CONFIG.rightMessages);
+    petals(10);
+    idx++;
+    setTimeout(() => {
+      if (idx < CONFIG.questions.length) { renderQ(); } else { drawHearts(); show("envelope"); }
+    }, 1100);
+  } else {
+    tries++;
+    el.classList.add("wrong");
+    const card = $("#card");
+    card.classList.remove("shake"); card.offsetHeight; card.classList.add("shake");
+    $("#msg").textContent = tries >= 2 && q.hint ? "Hint: " + q.hint : CONFIG.wrongMessages[(tries - 1) % CONFIG.wrongMessages.length];
+    $("#msg").scrollIntoView({ block: "nearest", behavior: "smooth" });
+    setTimeout(() => el.classList.remove("wrong"), 900);
+  }
+}
+
+// Letter
+function openLetter() {
+  $("#env").classList.add("open");
+  petals(50);
+  setTimeout(() => {
+    const paras = CONFIG.letter.trim().split(/\n\s*\n/);
+    const sheet = $("#sheet");
+    sheet.innerHTML = `<div class="to"></div>` + paras.map(() => "<p></p>").join("") + `<p class="sign"></p>`;
+    sheet.querySelector(".to").textContent = "Dear " + CONFIG.herName + ",";
+    const ps = sheet.querySelectorAll("p");
+    paras.forEach((t, i) => ps[i].textContent = t.replace(/\n/g, " "));
+    ps[ps.length - 1].textContent = "Forever yours, " + CONFIG.yourName + " \u2665";
+    show("letter");
+    setTimeout(() => ps.forEach((p, i) => setTimeout(() => p.classList.add("show"), reduce ? 0 : 700 + i * 1400)), 500);
+  }, reduce ? 100 : 1900);
+}
+
+$("#start").onclick = () => { show("quiz"); renderQ(); };
+$("#seal").onclick = openLetter;
+</script>
+</body>
+</html>
